@@ -1,0 +1,14 @@
+# House local surface — never publish
+# Canon: CLAUDE-base.md § Local working surface.
+# git init copies this file to .git/worktree.gitignore (templateDir).
+# The template pre-commit copies it to the worktree .gitignore on first
+# commit if that file is missing. Language extras (__pycache__/,
+# node_modules/, …) belong in the project, not here.
+.local/
+.inbox/
+.claude/
+.cursor/
+.grok/
+.aider*
+.env
+.DS_Store

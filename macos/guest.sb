@@ -1,0 +1,34 @@
+;; Minimal deny-default Seatbelt profile for a visiting agent. macOS only.
+;; Params (pass with sandbox-exec -D): PAD  absolute path of the lobby pad (read-only)
+;;                                    TMP  absolute path of a scratch dir the guest may write
+;; Everything not allowed below is denied. In SBPL the last matching rule wins.
+(version 1)
+(deny default)
+
+;; run programs
+(allow process-exec* file-map-executable process-fork)
+(allow process-info-pidinfo process-info-setcontrol (target self))
+(allow signal (target self))
+(allow sysctl-read)
+
+;; read system and runtime files
+(allow file-read*
+  (subpath "/usr") (subpath "/bin") (subpath "/sbin") (subpath "/System")
+  (subpath "/Library") (subpath "/opt/homebrew") (subpath "/private/etc")
+  (subpath "/dev") (literal "/"))
+(deny file-read-data (subpath "/Library/Keychains") (subpath "/System/Library/Keychains"))
+
+;; path resolution only (no listing) for the directories above the pad
+(allow file-read-metadata
+  (literal "/") (literal "/private") (literal "/private/var") (literal "/private/tmp")
+  (literal "/tmp") (literal "/Users") (literal "/Users/Shared") (literal "/etc") (literal "/var"))
+
+;; the pad: read, never write
+(allow file-read* (subpath (param "PAD")))
+
+;; the guest's own scratch space
+(allow file-read* file-write* (subpath (param "TMP")))
+(allow file-write* (literal "/dev/null") (literal "/dev/dtracehelper"))
+
+;; network: loopback to a local model server only
+(allow network-outbound (remote ip "localhost:11434"))
